@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 Factory Inventory Management System Demo with GitHub integration - Full-stack application with Vue 3 frontend, Python FastAPI backend, and in-memory mock data (no database).
 
 ## Critical Tool Usage Rules
@@ -31,20 +33,43 @@ Use the Task tool with these specialized subagents for appropriate tasks:
 ## Quick Start
 
 ```bash
-# Backend
+# One-command startup (both servers)
+./scripts/start.sh
+./scripts/stop.sh
+
+# Manual — Backend
 cd server
+uv venv && uv sync
 uv run python main.py
 
-# Frontend
+# Manual — Frontend
 cd client
 npm install && npm run dev
 ```
 
+API docs (Swagger UI): `http://localhost:8001/docs`
+
+## Testing
+
+```bash
+# All backend tests
+cd tests && uv run pytest backend/ -v
+
+# Single test file
+cd tests && uv run pytest backend/test_inventory.py -v
+
+# Single test function
+cd tests && uv run pytest backend/test_inventory.py::test_get_inventory -v
+```
+
+Fixtures are in `tests/backend/conftest.py`. No frontend test framework is configured.
+
 ## Key Patterns
 
 **Filter System**: 4 filters (Time Period, Warehouse, Category, Order Status) apply to all data via query params
-**Data Flow**: Vue filters → `client/src/api.js` → FastAPI → In-memory filtering → Pydantic validation → Computed properties
+**Data Flow**: Vue filters → `useFilters` composable → `client/src/api.js` → FastAPI → In-memory filtering → Pydantic validation → Computed properties
 **Reactivity**: Raw data in refs (`allOrders`, `inventoryItems`), derived data in computed properties
+**Composables**: `useFilters()` is a singleton — one shared filter state across all views. `useAuth()` provides current user/tasks. `useI18n()` provides the `t()` translation function.
 
 ## API Endpoints
 - `GET /api/inventory` - Filters: warehouse, category
@@ -62,10 +87,16 @@ npm install && npm run dev
 
 ## File Locations
 - Views: `client/src/views/*.vue`
+- Components: `client/src/components/*.vue`
+- Composables: `client/src/composables/` (useFilters, useAuth, useI18n)
 - API Client: `client/src/api.js`
 - Backend: `server/main.py`, `server/mock_data.py`
 - Data: `server/data/*.json`
 - Styles: `client/src/App.vue`
+- Tests: `tests/backend/`
+
+## Code Style
+- Always document non-obvious logic changes with comments
 
 ## Design System
 - Colors: Slate/gray (#0f172a, #64748b, #e2e8f0)
